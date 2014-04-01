@@ -1,0 +1,44 @@
+
+
+
+P_1 'bind' ( x_1 ->
+P_2 'bind' ( x_2 ->
+P_3 'bind' ( x_3 ->
+...
+guard beta(x_1, x_2, x_2, ...) 'bind' ( * ->
+result f (x_1, x_2, x_2) )...)))
+
+
+function Compr(p, f,g,h,... ) {
+	( a_1, y_1 ) =  p(x_0);
+	var a_1 = a_1;
+
+	return 
+	
+
+}
+
+
+
+f * Result
+f * P
+
+
+
+[ f x y z | x \from p, y \from q, x + z = 0, \guard_g x y ]
+
+
+
+guard:
+
+\_ -> f(x, y, z) * result(())
+
+
+e := result() 
+
+var mixin = function (source, target, props) {
+	var props = [].slice.call(arguments,2);
+	for(prop in props) {
+		target[prop] = source[prop];
+	}
+};

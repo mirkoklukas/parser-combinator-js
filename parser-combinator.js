@@ -64,6 +64,14 @@
 		});
 	};
 
+	Parser.prototype.mult = function (f) {
+		var p = this;
+		return function (x) {
+			if (b(x)===true) return p;
+			else return zero;
+		};
+	};
+
 	var sat = function (f) {
 		return item.bind(function (x) {
 				return f(x) === true ? result(x) : zero;
@@ -154,47 +162,7 @@
 		});
 	};
 
-	//concat:: function --> function --> ... function --> function -->
-	//could realised as... concat: [function] --> function
-	var concat = function () {
-			var fs = Array.prototype.slice.call(arguments)
-			return fs.length === 1 ? fs[0] : function () { 
-				var args = Array.prototype.slice.call(arguments);
-				return fs[0]( concat.apply(this, fs.slice(1)).apply(this, args) );
-			};
-	};
 
-	var partial = function (f, x) {
-		return function () {
-				var bs = Array.prototype.slice.call(arguments);
-				return f.apply(this, [x].concat(bs));
-		};
-	};
-
-	var comprehension = function (ps, f) {
-		console.log(ps)
-		console.log(f)
-		if(ps.length === 0) return result( f() );
-		return ps.shift().bind( function (x) {
-				return comprehension(ps, partial(f,x) );
-		});
-	};
-
-	// same as comprehension
-	var pipeline = function (ps, f) {
-		var args =  [].slice.call(arguments);
-		if(args.length === 0) return result(args[0]());
-		else return args.shift().bind(function (x) {
-			return pipeline.apply(null, args.push(partial(f,x)));
-		});
-	};
-
-	var guard = function(g) {
-		return new Parser(function (x,_) {
-						
-		});
-	}
-	
 
 
 
