@@ -107,8 +107,8 @@
 		})
 	}; 
 
-	//sepby1: Parser a --> Parser b --> Parser [a]
-	Parser.prototype.sepby1 = function (sep) {
+	//sepby_+: Parser a --> Parser b --> Parser [a]
+	Parser.prototype.sepby_plus = function (sep) {
 		var p = this;
 		return p.bind(function (x) {
 			return many_star( sep.bind(function (_) { return p; }) ).bind(function (xs) {
@@ -117,7 +117,7 @@
 		});
 	};
 
-	Parser.prototype.sepby = function (sep) {
+	Parser.prototype.sepby_star = function (sep) {
 		var p = this;
 		return p.sepby1(sep).plus( result([]) );
 	};

@@ -16,4 +16,4 @@ var xy = char("x").bind(function (c) {
 
 
 
-console.log( p.parse("1234 hallo") )
+console.log( many_plus(letter).parse("xx e") )
