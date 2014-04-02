@@ -1,4 +1,4 @@
-# Javascript Parser Combinator
+# Javascript Parser Combinators
 
 A Javascript implementation of the monadic parser combinators defined by G. Hutton and E. Meijer [1].
 
