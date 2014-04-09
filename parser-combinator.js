@@ -58,6 +58,8 @@
 		});
 	};
 
+
+
 	Parser.prototype.or = function (q) {
 		var p = this;
 		return new Parser(function (x) {
@@ -121,6 +123,14 @@
 		return p.bind(function (xs) {
 			return result(xs.join("")); 
 		})
+	};
+
+	Parser.prototype.first = function() {
+		var p = this;
+		return new Parser(function (x) {
+			var ys = p.parse(x);
+			return ys.length > 0 ? [ys[0]] : [];
+		});
 	}; 
 
 	//sepby_+: Parser a --> Parser b --> Parser [a]
@@ -136,6 +146,15 @@
 	Parser.prototype.sepby_star = function (sep) {
 		var p = this;
 		return p.sepby_plus(sep).plus( result([]) );
+	};
+
+	Parser.prototype.sepby_one = function (sep) {
+		var p = this;
+		return p.bind(function (x) {
+			return sep.bind(function (_) {
+				return result(x);
+			});
+		});
 	};
 
 	//
@@ -161,6 +180,18 @@
 	});
 
 	var letter = lower.plus(upper);
+
+	var symbol = sat(function (x) {
+		return "!#$%&|*+-/:<=>?@^_~".indexOf(x) > -1;
+	});
+
+	var isSpace = function (x) {
+		return (x == " ") || (x == "\n") || (x == "\t");
+	};
+
+	var spaces = many_plus(sat(isSpace)).first().bind(function (_) {
+		return result([]);
+	});
 
 	var alphanum = letter.plus(digit);
 
