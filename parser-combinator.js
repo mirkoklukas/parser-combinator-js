@@ -1,5 +1,6 @@
 
 
+
 	var Parser = function (f) {
 		//f a:: String --> [(a,String)]
 		this.parse = f;
@@ -23,6 +24,7 @@
 		return string.length === 0 ? [] : [ [string.charAt(0), string.slice(1)] ];
 	});
 
+	// Same as item
 	var shift = new Parser(function (string) {
 		return string.length === 0 ? [] : [ [string.charAt(0), string.slice(1)] ];
 	});
@@ -32,6 +34,7 @@
 			return [["", xs + string]];
 		});
 	};
+
 
 	//
 	//	Combinators
@@ -55,6 +58,14 @@
 		});
 	};
 
+	Parser.prototype.or = function (q) {
+		var p = this;
+		return new Parser(function (x) {
+			var ys = p.parse(x);
+			return ys.length > 0 ? ys : q.parse(x);
+		});
+	};
+
 	Parser.prototype.seq = function (q) {
 		var p = this;
 		return p.bind( function (x) { 
@@ -67,8 +78,7 @@
 	Parser.prototype.mult = function (f) {
 		var p = this;
 		return function (x) {
-			if (b(x)===true) return p;
-			else return zero;
+			return f(x)===true ? p : zero;
 		};
 	};
 
@@ -79,13 +89,20 @@
 	};
 
 	//many_*:: Parser a --> Parser [a]
-	//The list [a] contains the matches of id, p, pˆ2, pˆ3,...
+	//The list [a] contains the matches of p, pˆ2, pˆ3,... and []
 	var many_star = function (p) {
 		return p.bind(function (x) {
 			return many_star(p).bind(function (xs) {
 				return result([x].concat(xs));
 			})
 		}).plus(result([]));
+	};
+
+	var first = function(p) {
+		return new Parser(function (x) {
+			var r = p.parse(x).shift();
+			return r == undefined ? [] : [r];
+		});
 	};
 
 	//many_+:: Parser a --> Parser [a]
@@ -99,7 +116,6 @@
 	};
 
 	//fold:: Parser [a] --> Parser a
-	//Could also just make a fold fct as in the bind statement...
 	Parser.prototype.fold = function() {
 		var p = this;
 		return p.bind(function (xs) {
@@ -119,7 +135,7 @@
 
 	Parser.prototype.sepby_star = function (sep) {
 		var p = this;
-		return p.sepby1(sep).plus( result([]) );
+		return p.sepby_plus(sep).plus( result([]) );
 	};
 
 	//
