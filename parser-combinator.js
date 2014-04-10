@@ -189,7 +189,9 @@
 		return (x == " ") || (x == "\n") || (x == "\t");
 	};
 
-	var spaces = many_plus(sat(isSpace)).first().bind(function (_) {
+	var space = sat(isSpace);
+
+	var spaces = many_plus(space).first().bind(function (_) {
 		return result([]);
 	});
 
