@@ -1,7 +1,8 @@
 
-
+// --------------------
+//  The scope object where expressions save their variables
+// --------------------
 var Scope = function (outerScope) {
-
 	this.dict = Object.create((outerScope || {}).dict || {});
 };
 
@@ -23,7 +24,9 @@ Scope.prototype.contains = function (key) {
 	return this.dict[key] !== undefined; 
 }
 
-
+// --------------------
+//  The parser pieces
+// --------------------
 var NUMBER = many_plus(digit).first().fold().bind(function (a) {
 	return char(".").bind(function (dot) {
 		return many_plus(digit).first().fold().bind(function (b) {
@@ -50,6 +53,9 @@ var LIST = char("(").bind(function (_) {
 	});
 });
 
+// --------------------
+// Create the AST in terms of nested lists
+// --------------------
 var parse = function(src) {
 	var result = (many_star(space).first()).bind(function (_) {
 		return LIST;
@@ -57,10 +63,10 @@ var parse = function(src) {
 	return result.length > 0 ? result[0][0] : null;
 };
 
+// --------------------
+// Evaluates subtrees (expressions) of the AST
+// --------------------
 var evaluate = function (expr, scope) {
-
-	
-
 	if(!(expr instanceof Array)) {
 
 		if( typeof expr === "string" ) {
@@ -113,9 +119,10 @@ var evaluate = function (expr, scope) {
 	}
 };
 
-
+// --------------------
 // Some primitive mathematical functions 
 // (used to populate the global scope below)
+// --------------------
 var primitiveFunctions = {
 	"+": function () { return [].slice.call(arguments).reduce(function(a,b){ return a+b; }); },
 	"-": function () { return [].slice.call(arguments).reduce(function(a,b){ return a-b; }); },
@@ -124,12 +131,16 @@ var primitiveFunctions = {
 	"=": function (a,b) { return a===b; }
 };
 
+// --------------------
 // Populate the global scope (with some
 // primitive mathematical functions defined above)
+// --------------------
 var globalScope = new Scope()
 globalScope.update(primitiveFunctions);
 
+// --------------------
 // Our sample programm source code
+// --------------------
 // var src = '(begin (define r 3) (* 3.141592653 (* r r)))';
 // var src = '(begin (define square (lambda (x) (* x x))) (square 2))';
 // var src = '(begin (define add (lambda (x y) (* y x))) (add 2 3))';
@@ -144,7 +155,9 @@ var src = 	'(begin ' +
 							'(* a (pow a (- b 1)))))) ' + 
 				'(pow 2 4))  '  ;
 
-// Parse and Execute
+// --------------------
+// Parse and execute the example-code
+// --------------------
 console.group("Create the AST");
 console.log("Source string:")
 console.log(src);
