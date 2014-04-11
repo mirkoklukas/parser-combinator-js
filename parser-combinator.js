@@ -1,14 +1,20 @@
 
 
+// ;function (exports) { 
 
+	// --------------------
+	// Parser constructor. 
+	// (Note that we define some prirmitive parsers first and then 
+	// add functions to Parser.prototype...)
+	// --------------------
 	var Parser = function (f) {
 		//f a:: String --> [(a,String)]
 		this.parse = f;
 	};
 
-	//
+	// --------------------
 	//	Primitives
-	//
+	// --------------------
 
 	var result = function (a) {
 		return new Parser(function (string)  { 
@@ -36,9 +42,9 @@
 	};
 
 
-	//
+	// --------------------
 	//	Combinators
-	//
+	// --------------------
 
 	Parser.prototype.bind = function (Q) {
 		var p = this;
@@ -57,8 +63,6 @@
 			return p.parse(x).concat(q.parse(x));
 		});
 	};
-
-
 
 	Parser.prototype.or = function (q) {
 		var p = this;
@@ -92,6 +96,7 @@
 
 	//many_*:: Parser a --> Parser [a]
 	//The list [a] contains the matches of p, pˆ2, pˆ3,... and []
+	// `many_*` succeeds even if the given parser `p` doesn't 
 	var many_star = function (p) {
 		return p.bind(function (x) {
 			return many_star(p).bind(function (xs) {
@@ -100,15 +105,9 @@
 		}).plus(result([]));
 	};
 
-	var first = function(p) {
-		return new Parser(function (x) {
-			var r = p.parse(x).shift();
-			return r == undefined ? [] : [r];
-		});
-	};
-
-	//many_+:: Parser a --> Parser [a]
-	//The list [a] contains the matches of p, pˆ2, pˆ3,... 
+	// many_+:: Parser a --> Parser [a]
+	// The list [a] contains the matches of p, pˆ2, pˆ3,...
+	// `many_+` only succeeds if the given parser `p` succeeds at least once 
 	var many_plus = function (p) {
 		return p.bind(function (x) {
 			return many_star(p).bind(function (xs) {
@@ -131,7 +130,15 @@
 			var ys = p.parse(x);
 			return ys.length > 0 ? [ys[0]] : [];
 		});
-	}; 
+	};
+
+	// // Independent alternative for Parser.prototype.first 
+	// var first = function(p) {
+	// 	return new Parser(function (x) {
+	// 		var r = p.parse(x).shift();
+	// 		return r == undefined ? [] : [r];
+	// 	});
+	// };
 
 	//sepby_+: Parser a --> Parser b --> Parser [a]
 	Parser.prototype.sepby_plus = function (sep) {
@@ -157,10 +164,10 @@
 		});
 	};
 
-	//
-	//	Level 1 Primitives
-	//
-
+	// --------------------
+	// More Primitives 
+	// (built with the above combinators)
+	// --------------------
 	var char = function (c) {
 		return sat(function (d) { 
 			return c == d; 
@@ -185,11 +192,9 @@
 		return "!#$%&|*+-/:<=>?@^_~".indexOf(x) > -1;
 	});
 
-	var isSpace = function (x) {
+	var space = sat(function (x) {
 		return (x == " ") || (x == "\n") || (x == "\t");
-	};
-
-	var space = sat(isSpace);
+	});
 
 	var spaces = many_plus(space).first().bind(function (_) {
 		return result([]);
@@ -211,7 +216,7 @@
 		});
 	};
 
-
+// }(typeof exports === 'undefined' ? this.ParserCombinator : exports));
 
 
 

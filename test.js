@@ -3,13 +3,14 @@
 //  The scope object where expressions save their variables
 // --------------------
 var Scope = function (outerScope) {
-	this.dict = Object.create((outerScope || {}).dict || {});
+	this.dict = Object.create( outerScope ? outerScope.dict : {});
 };
 
 Scope.prototype.update = function (dict) {
 	for (key in dict) {
 		this.dict[key] = dict[key];
 	}
+	return this;
 };
 
 Scope.prototype.get = function (key) {
@@ -27,7 +28,9 @@ Scope.prototype.contains = function (key) {
 // --------------------
 //  The parser pieces
 // --------------------
-var NUMBER = many_plus(digit).first().fold().bind(function (a) {
+// TODO: you should be able to parse negative numbers
+// (e.g. "-3.14")
+var NUMBER = many_plus(digit).bind(function (a) {
 	return char(".").bind(function (dot) {
 		return many_plus(digit).first().fold().bind(function (b) {
 			return result(Number(a + "." + b));
@@ -135,8 +138,7 @@ var primitiveFunctions = {
 // Populate the global scope (with some
 // primitive mathematical functions defined above)
 // --------------------
-var globalScope = new Scope()
-globalScope.update(primitiveFunctions);
+var globalScope = (new Scope()).update(primitiveFunctions);
 
 // --------------------
 // Our sample programm source code
@@ -144,7 +146,8 @@ globalScope.update(primitiveFunctions);
 // var src = '(begin (define r 3) (* 3.141592653 (* r r)))';
 // var src = '(begin (define square (lambda (x) (* x x))) (square 2))';
 // var src = '(begin (define add (lambda (x y) (* y x))) (add 2 3))';
-var src = 	'(begin ' +
+var src = '(begin ' +
+				'(define x 2) ' +
 				'(define ' +
 					'pow ' +
 					'(lambda ' + 
@@ -153,7 +156,7 @@ var src = 	'(begin ' +
 							'(= b 0) ' +
 							'1 ' +
 							'(* a (pow a (- b 1)))))) ' + 
-				'(pow 2 4))  '  ;
+				'(pow x 4)) ';
 
 // --------------------
 // Parse and execute the example-code
