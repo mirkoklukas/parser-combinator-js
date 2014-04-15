@@ -21,7 +21,8 @@ var Lispy = (function (parserCombinator) {
 		many_plus = $.combinators.many_plus,
 		many_star = $.combinators.many_star,
 		sepBy_star = $.combinators.sepBy_star,
-		sat = $.combinators.sat;
+		sat = $.combinators.sat,
+		comprehension = $.combinators.comprehension
 
 	var result = $.primitives.result,
 		char = $.primitives.char,
@@ -46,15 +47,15 @@ var Lispy = (function (parserCombinator) {
 		}).or(result(Number(a)));
 	});
 
-	var NUMBER = sign.bind(function (sign) {
-		return POSITIVE_NUMBER.bind(function (n) {
-			return result(Number(sign + n));
-		});
-	});
-
-	// var number = comprehension(many_plus(digit).first().fold(), char("."), many_plus(digit).first().fold(), function (a, dot, b) {
-	// 	return Number(a + "." + b);
+	// var NUMBER = sign.bind(function (sign) {
+	// 	return POSITIVE_NUMBER.bind(function (n) {
+	// 		return result(Number(sign + n));
+	// 	});
 	// });
+
+	var NUMBER = comprehension(sign, POSITIVE_NUMBER, function (sign, n) {
+		return Number(sign + n);
+	});
 
 	var IDENTIFIER = letter.or(symbol).bind(function (first) {
 		return many_star(letter.or(digit).or(symbol)).first().fold().bind(function (rest) {
@@ -86,79 +87,105 @@ var Lispy = (function (parserCombinator) {
 	};
 
 	// --------------------
-	// Evaluates subtrees (expressions) of the AST
+	// 	Evaluates subtrees (expressions) of the AST
 	// --------------------
 	var evaluate = function (expr, scope) {
+		// --------------------
+		// 	Evaluate Atoms, i.e. non-list expr
+		// --------------------
 		if(!(expr instanceof Array)) {
-
-			if( typeof expr === "string" ) {
-
+			switch(typeof expr) {
+			// --------------------
+			case "string":
 				return scope[expr];
-			}
-			else {
+				break;
+			// --------------------
+			case "number":
+			case "boolean":
 				return expr;
+				break;
 			}
+		// --------------------
+		// 	Empty list `()`
+		// --------------------
 		} else if (expr.length === 0) { 
-
-		} else if (expr[0] === 'begin') {
-			var vals = expr.slice(1).map(function (x) {
-				return evaluate(x, scope);
-			});
-			return vals.pop();
-		} else if (expr[0] === 'define') {
-
-			var key = expr[1],
-				val = evaluate(expr[2], scope);
-			scope[key] = val;
-		} else if (expr[0] === 'if') {
-			var condition = expr[1],
-				conseq = expr[2],
-				alt = expr[3];
-			return evaluate(condition, scope) ? evaluate(conseq, scope) : evaluate(alt, scope);
-		} else if (expr[0] === 'set!') {
-
-			var key = expr[1],
-				val = evaluate(expr[2], scope);
-			scope[key] = val;
-		} else if (expr[0] === 'lambda') {
-			var keys = expr[1],
-				body = expr[2];
-
-			return function () {
-				var args = [].slice.call(arguments);
-				var functionScope =  createScope(scope);
-				for(var i = 0, max = keys.length; i < max; i++) { 
-					functionScope[keys[i]] = args[i];
-				}
-				return evaluate(body, functionScope);
-			};
+			console.log("Empty list...")
+			return null;
+		// --------------------
+		// 	Evaluate list expressions
+		// --------------------
 		} else {
-			var f = scope[expr[0]];
-			var args = expr.slice(1).map(function (x) {
-				return evaluate(x, scope);
-			});
-			return f.apply(null, args);
+			switch(expr[0]) {
+			// --------------------
+			case "begin":
+				var vals = expr.slice(1).map(function (x) {
+					return evaluate(x, scope);
+				});
+				return vals.pop();
+				break;
+			// --------------------
+			case "define":
+				var key = expr[1]
+				  ,	val = evaluate(expr[2], scope);
+				scope[key] = val;
+				break;
+			// --------------------
+			case "if":
+				var condition = expr[1]
+				  ,	conseq = expr[2]
+				  ,	alt = expr[3];
+				return evaluate(condition, scope) ? evaluate(conseq, scope) : evaluate(alt, scope);
+				break;
+			// --------------------
+			case "set!":
+				var key = expr[1]
+				  ,	val = evaluate(expr[2], scope);
+				scope[key] = val;
+				break;
+			// --------------------
+			case "lambda":
+				var keys = expr[1]
+				  ,	body = expr[2];
+				return function () {
+					var args = [].slice.call(arguments)
+					  , functionScope =  createScope(scope);
+					for(var i = 0, max = keys.length; i < max; i++) { 
+						functionScope[keys[i]] = args[i];
+					}
+					return evaluate(body, functionScope);
+				};
+				break;
+			// --------------------
+			default:
+				var f = scope[expr[0]]
+				  , args = expr.slice(1).map(function (x) {
+					return evaluate(x, scope);
+				});
+				return f.apply(null, args);
+			}
 		}
 	};
 
 	// --------------------
-	// Some primitive mathematical functions 
-	// (used to populate the global scope below)
+	// 	Populate the global scope (with some
+	// 	primitive mathematical functions)
 	// --------------------
-	var primitiveFunctions = {
+	var globalScope = createScope({
 		"+": function () { return [].slice.call(arguments).reduce(function(a,b){ return a+b; }); },
 		"-": function () { return [].slice.call(arguments).reduce(function(a,b){ return a-b; }); },
 		"*": function () { return [].slice.call(arguments).reduce(function(a,b){ return a*b; }); },
 		"/": function () { return [].slice.call(arguments).reduce(function(a,b){ return a/b; }); },
-		"=": function (a,b) { return a===b; }
-	};
+		"=": function (a,b) { return a===b; },
+		"<": function (a,b) { return a<b; },
+		">": function (a,b) { return a>b; },
+		"AND": function (a,b) { return a && b; },
+		"OR": function (a,b) { return a || b; }
+	});
+
 
 	// --------------------
-	// Populate the global scope (with some
-	// primitive mathematical functions defined above)
+	// 	Return the interpreter object
 	// --------------------
-	var globalScope = createScope(primitiveFunctions);
-
 	return {
 		parse: parse,
 		run: function (src) {

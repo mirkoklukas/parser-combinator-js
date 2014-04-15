@@ -3,9 +3,9 @@
 ;(function (exports) { 
 
 	// --------------------
-	// Parser constructor. 
-	// (Note that we define some prirmitive parsers first and then 
-	// add functions to Parser.prototype using these primitives)
+	// 	Parser constructor. 
+	// 	(Note that we define some prirmitive parsers first and then 
+	// 	add functions to Parser.prototype using these primitives)
 	// --------------------
 	var Parser  = function (f) {
 		//f a:: String --> [(a,String)]
@@ -168,14 +168,20 @@
 
 	// --------------------
 	// `comprehension` is syntactic sugar for a common
-	// pattern that arises while working parser combinators (see example below).
-	// p1.bind(function (x1) { 
-	// 	return p2.bind(function (x2) {
-	// 		return p3.bind(function (x3) {
-	// 			return result(f(x1,x2,x3));
-	// 		})
-	// 	});
-	// });
+	// pattern that arises while working parser combinators, namely:
+	// 		
+	// 		comprehension(p1, p2, p3, function f(x1, x2, x3) { ... }) 
+	//
+	//		:=
+	// 		
+	// 		p1.bind(function (x1) { 
+	// 			return p2.bind(function (x2) {
+	// 				return p3.bind(function (x3) {
+	// 						return result(f(x1,x2,x3));
+	// 					})
+	// 			});
+	// 		});
+	// 
 	// --------------------
 	var partial = function (f, x) {
 		return function () {
@@ -184,6 +190,7 @@
 		};
 	};
 
+	// Takes an arbitray number of parsers and function of their results (see example above)
 	var comprehension = combinators.comprehension = function () {
 		var args = [].slice.call(arguments),
 			ps = args.slice(0,-1),
