@@ -98,9 +98,9 @@
 	//many_*:: Parser a --> Parser [a]
 	//The list [a] contains the matches of p, pˆ2, pˆ3,... and []
 	// `many_*` succeeds even if the given parser `p` doesn't 
-	var many_star = combinators.many_star = function (p) {
+	var manyStar = combinators.manyStar = function (p) {
 		return p.bind(function (x) {
-			return many_star(p).bind(function (xs) {
+			return manyStar(p).bind(function (xs) {
 				return result([x].concat(xs));
 			})
 		}).plus(result([]));
@@ -109,9 +109,9 @@
 	// many_+:: Parser a --> Parser [a]
 	// The list [a] contains the matches of p, pˆ2, pˆ3,...
 	// `many_+` only succeeds if the given parser `p` succeeds at least once 
-	var many_plus = combinators.many_plus = function (p) {
+	var manyPlus = combinators.manyPlus = function (p) {
 		return p.bind(function (x) {
-			return many_star(p).bind(function (xs) {
+			return manyStar(p).bind(function (xs) {
 				return result([x].concat(xs));
 			})
 		});
@@ -142,21 +142,21 @@
 	// };
 
 	//sepby_+: Parser a --> Parser b --> Parser [a]
-	Parser.prototype.sepBy_plus = function (sep) {
+	Parser.prototype.sepByPlus = function (sep) {
 		var p = this;
 		return p.bind(function (x) {
-			return many_star( sep.bind(function (_) { return p; }) ).bind(function (xs) {
+			return manyStar( sep.bind(function (_) { return p; }) ).bind(function (xs) {
 					return result([x].concat(xs));
 				})
 		});
 	};
 
-	Parser.prototype.sepBy_star = function (sep) {
+	Parser.prototype.sepByStar = function (sep) {
 		var p = this;
-		return p.sepBy_plus(sep).plus( result([]) );
+		return p.sepByPlus(sep).plus( result([]) );
 	};
 
-	Parser.prototype.sepBy_one = function (sep) {
+	Parser.prototype.sepByOne = function (sep) {
 		var p = this;
 		return p.bind(function (x) {
 			return sep.bind(function (_) {
@@ -168,7 +168,7 @@
 
 	// --------------------
 	// `comprehension` is syntactic sugar for a common
-	// pattern that arises while working parser combinators, namely:
+	// pattern, (*) say, that arises while working parser combinators, namely:
 	// 		
 	// 		comprehension(p1, p2, p3, function f(x1, x2, x3) { ... }) 
 	//
@@ -192,11 +192,14 @@
 
 	// Takes an arbitray number of parsers and function of their results (see example above)
 	var comprehension = combinators.comprehension = function () {
-		var args = [].slice.call(arguments),
-			ps = args.slice(0,-1),
-			f = args[args.length - 1];
-		if(args.length === 1) return result( f() );
-		return ps.shift().bind( function (x) {
+		// The first (n-1) of the n arguments are expected to be parsers, 
+		// whereas the last argument is a function that takes the results of
+		// these parsers, when applied in the pattern (*) described above
+		var args = [].slice.call(arguments)
+		  , ps = args.slice(0,-1)
+		  , f = args[args.length - 1];
+
+		return args.length === 1 ? result(f()) : ps.shift().bind( function (x) {
 				return comprehension.apply(null, ps.concat([partial(f,x)]) );
 		});
 	};
@@ -230,7 +233,7 @@
 		return (x == " ") || (x == "\n") || (x == "\t");
 	});
 
-	var spaces = primitives.spaces = many_plus(space).first().bind(function (_) {
+	var spaces = primitives.spaces = manyPlus(space).first().bind(function (_) {
 		return result([]);
 	});
 
