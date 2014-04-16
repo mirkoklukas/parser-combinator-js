@@ -18,9 +18,12 @@ var Lispy = (function (parserCombinator) {
 	// scope with the parts of the parser combinator we need.
 	// 
 	var $ = parserCombinator,
-		many_plus = $.combinators.many_plus,
-		many_star = $.combinators.many_star,
-		sepBy_star = $.combinators.sepBy_star,
+		manyPlus = function (p) {
+			return $.combinators.manyPlus(p).fold();
+		},
+		manyStar = function (p) {
+			return $.combinators.manyStar(p).fold();
+		},
 		sat = $.combinators.sat,
 		comprehension = $.combinators.comprehension
 
@@ -39,51 +42,55 @@ var Lispy = (function (parserCombinator) {
 			return (x === "+" || x === "-") ?  result(x) : reShift(x);
 		});
 
-	var POSITIVE_NUMBER = many_plus(digit).first().fold().bind(function (a) {
+	var POSITIVE_NUMBER = manyPlus(digit).bind(function (a) {
 		return char(".").bind(function (dot) {
-			return many_plus(digit).first().fold().bind(function (b) {
+			return manyPlus(digit).bind(function (b) {
 				return result(Number(a + "." + b));
 			});
 		}).or(result(Number(a)));
 	});
 
-	// var NUMBER = sign.bind(function (sign) {
-	// 	return POSITIVE_NUMBER.bind(function (n) {
-	// 		return result(Number(sign + n));
-	// 	});
-	// });
-
-	var NUMBER = comprehension(sign, POSITIVE_NUMBER, function (sign, n) {
-		return Number(sign + n);
+	var NUMBER = sign.bind(function (sign) {
+		return POSITIVE_NUMBER.bind(function (n) {
+			return result(Number(sign + n));
+		});
 	});
 
+	// var NUMBER = comprehension(sign, POSITIVE_NUMBER, function (sign, n) {
+	// 	return Number(sign + n);
+	// });
+
 	var IDENTIFIER = letter.or(symbol).bind(function (first) {
-		return many_star(letter.or(digit).or(symbol)).first().fold().bind(function (rest) {
+		return manyStar(letter.or(digit).or(symbol)).bind(function (rest) {
 				return  result(first + rest);
 		});
 	});
 
 	// Non-list expressions
 	var ATOM = IDENTIFIER.or(NUMBER);
-	 	
+
 	var LIST = char("(").bind(function (_) {
-		return (ATOM.or(LIST)).sepBy_star(spaces).first().bind(function (exprs) {
-			return many_star(space).bind(function (_) {
+		return (ATOM.or(LIST)).sepByPlus(spaces).bind(function (exprs) {
+			return manyStar(space).bind(function (_) {
 				return char(")").bind(function (_) { 
 					return result(exprs);
 				});
 			});	
 		});
 	});
-
 	// --------------------
 	// Create the AST in terms of nested lists
 	// --------------------
 	var parse = function(src) {
-		var result = (many_star(space).first()).bind(function (_) {
-			return LIST;
+		var parsedSrc = manyStar(space).bind(function (_) {
+			return LIST.bind(function (l) {
+				return manyStar(space).bind(function (_) {
+					return result(l);
+				});
+			});
 		}).parse(src);
-		return result.length > 0 ? result[0][0] : null;
+
+		return parsedSrc.length > 0 ? parsedSrc[0][0] : null;
 	};
 
 	// --------------------
