@@ -15,26 +15,25 @@ var Lispy = (function (parserCombinator) {
 	// --------------------
 
 	// To keep notation tight we start with populating the local
-	// scope with the parts of the parser combinator we need.
+	// scope with theire parts of the parser combinator we need.
 	// 
-	var $ = parserCombinator,
-		manyPlus = function (p) {
-			return $.combinators.manyPlus(p).fold();
+	var manyPlus = function (p) {
+			return parserCombinator.combinators.manyPlus(p).fold();
 		},
 		manyStar = function (p) {
-			return $.combinators.manyStar(p).fold();
+			return parserCombinator.combinators.manyStar(p).fold();
 		},
-		sat = $.combinators.sat,
-		comprehension = $.combinators.comprehension
+		sat = parserCombinator.combinators.sat,
+		comprehension = parserCombinator.combinators.comprehension;
 
-	var result = $.primitives.result,
-		char = $.primitives.char,
-		digit = $.primitives.digit,
-		letter = $.primitives.letter,
-		shift = $.primitives.shift,
-		reShift = $.primitives.reShift,
-		space = $.primitives.space,
-		spaces = $.primitives.spaces,
+	var result = parserCombinator.primitives.result,
+		char = parserCombinator.primitives.char,
+		digit = parserCombinator.primitives.digit,
+		letter = parserCombinator.primitives.letter,
+		shift = parserCombinator.primitives.shift,
+		reShift = parserCombinator.primitives.reShift,
+		space = parserCombinator.primitives.space,
+		spaces = parserCombinator.primitives.spaces,
 		symbol = sat(function (x) {
 			return "!#$%&|*+-/:<=>?@^_~".indexOf(x) > -1;
 		}),

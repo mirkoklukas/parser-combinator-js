@@ -7,11 +7,15 @@
 	// 	(Note that we define some prirmitive parsers first and then 
 	// 	add functions to Parser.prototype using these primitives)
 	// --------------------
-	var Parser  = function (f) {
+	var Parser  = function (f, id) {
 		//f a:: String --> [(a,String)]
-		this.parse = f;
-	};
+		this.parse = function (string) {
+			var result = f(string);
+			return result;
+		};
 
+		this.id = id || "Nobody";
+	};
 
 	// --------------------
 	//	Primitives
@@ -21,16 +25,16 @@
 	var result = primitives.result = function (a) {
 		return new Parser(function (string)  { 
 			return [[a,string]]; 
-		});
+		}, "Result");
 	};
 
 	var zero = primitives.zero = new Parser(function (string) {
 		return [];
-	});
+	}, "Zero");
 
 	var item = primitives.item = new Parser(function (string) {
 		return string.length === 0 ? [] : [ [string.charAt(0), string.slice(1)] ];
-	});
+	}, "Item");
 
 	// Same as item
 	var shift = primitives.shift = new Parser(function (string) {
@@ -53,7 +57,11 @@
 		return new Parser(function (x) {
 			var ys = p.parse(x);
 			var zs = ys.map(function (y) {
-				return f(y[0]).parse(y[1]);
+				ws = f(y[0]).parse(y[1]);
+				return ws.map(function (w) {
+					w[0].history.push(f(y[0]).id);
+					return w;
+				});
 			});
 			return [].concat.apply([], zs);
 		});
