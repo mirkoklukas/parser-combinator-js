@@ -12,6 +12,7 @@
 		this.parse = f;
 	};
 
+
 	// --------------------
 	//	Primitives
 	// --------------------
@@ -50,7 +51,7 @@
 	Parser.prototype.bind = function (f) {
 		var p = this;
 		return new Parser(function (x) {
-			var ys = p.parse(x)
+			var ys = p.parse(x);
 			var zs = ys.map(function (y) {
 				return f(y[0]).parse(y[1]);
 			});
@@ -246,8 +247,8 @@
 		var x = str.charAt(0);
 		var xs = str.slice(1);
 
-		return char(x).bind(  function(_) {
-			return keyword(xs).bind( function(_) {
+		return char(x).bind(function (_) {
+			return keyword(xs).bind(function (_) {
 				return result(x + xs);
 			})
 		});
@@ -260,5 +261,6 @@
 	}
 
 }(typeof exports === 'undefined' ? this : exports));
+
 
 
