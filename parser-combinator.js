@@ -7,18 +7,20 @@
 	// 	(Note that we define some prirmitive parsers first and then 
 	// 	add functions to Parser.prototype using these primitives)
 	// --------------------
-	var Parser  = function (func, id) {
-		//f a:: String --> ([(a,String)], [])
+	var Parser  = function (f, id) {
+		//f a:: String --> [(a,String)]
 		this.parse = function (string) {
-			var result = func(string);
 
-			var addHistory = (function (id) {
-				return function (obj) {
-					if(id !== "Nobody") obj.history = [[id , obj.history || [] ]];
-					else obj.history = obj.history || [];
+			var result = f(string)
+			  , id = this.getId()
+			  , addHistory = function (obj) {
+					if(id !== "Nobody") 
+						obj.history = [[id , obj.history || [] ]];
+					else 
+						obj.history = obj.history || [];
+
 					return obj;
 				};
-			})(this.getId());
 
 			result = result.length === 0 ? addHistory(result) : result.map(function (r) {
 				return addHistory(r);
@@ -34,6 +36,7 @@
 			this.id = id;
 			return this;
 		};
+		
 		this.getId = function () {
 			return this.id;
 		}
@@ -80,10 +83,7 @@
 	var combinators = {};
 
 	Parser.prototype.bind = function (f) {
-
-
 		var p = this;
-
 		return new Parser(function (x) {
 
 			var ys = p.parse(x);
@@ -92,21 +92,15 @@
 				return ys;
 			} else {
 				var zs = ys.map(function (y) {
-
 					var ws = f(y[0]).parse(y[1]);
-
 					if( ws.length === 0) {	
 						ws.history = ws.history.concat(y.history);
 						return ws;
-
 					} else {
-
 						var www = ws.map(function (w) {
-
 							w.history = w.history.concat(y.history);
 							return w;
 						})	
-
 						return 	www;	
 					}
 				});
