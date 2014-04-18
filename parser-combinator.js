@@ -7,26 +7,19 @@
 	// 	(Note that we define some prirmitive parsers first and then 
 	// 	add functions to Parser.prototype using these primitives)
 	// --------------------
-	var Parser  = function (f, id) {
+	var Parser  = function (func, id) {
 		//f a:: String --> ([(a,String)], [])
 		this.parse = function (string) {
-			var result = f(string);
+			var result = func(string);
 
-			//console.log("PPAAAAAARRRRSSSSEEE")
-			//console.log(result)
-			//console.log(result.history)
 			var addHistory = (function (id) {
 				return function (obj) {
-					//console.log("HHHIIIISSSSSSSTTTOORY");
-					//console.log(obj.history);
-					//console.log(id);
 					if(id !== "Nobody") obj.history = [[id , obj.history || [] ]];
 					else obj.history = obj.history || [];
 					return obj;
 				};
 			})(this.getId());
 
-			// addHistory(result)
 			result = result.length === 0 ? addHistory(result) : result.map(function (r) {
 				return addHistory(r);
 			});
@@ -92,38 +85,28 @@
 		var p = this;
 
 		return new Parser(function (x) {
-			//console.log("BINDSTART " + x)
+
 			var ys = p.parse(x);
-			//console.log("ys == ")
-			//console.log(ys)
-			//console.log(">>=")
+
 			if(ys.length===0) {
-				//console.log("ys == []")
-				//console.log("ENDBIND " + x)
 				return ys;
 			} else {
 				var zs = ys.map(function (y) {
-					//console.log("ys == [.....]")
-					//console.log("y == ")
-					//console.log(y)
+
 					var ws = f(y[0]).parse(y[1]);
-					//console.log("ws == ")
-					//console.log(ws)
-					if( ws.length === 0) {
-						//console.log("ws == []")
-	
+
+					if( ws.length === 0) {	
 						ws.history = ws.history.concat(y.history);
 						return ws;
 
 					} else {
-						//console.log("ws == [.....]")
+
 						var www = ws.map(function (w) {
-							//console.log(w);
+
 							w.history = w.history.concat(y.history);
 							return w;
 						})	
-						//console.log("ws == ")
-						//console.log( www)
+
 						return 	www;	
 					}
 				});
@@ -135,9 +118,7 @@
 					} 
 					return result;
 				});
-				//console.log("zs == ")
-				//console.log(xxx)
-				//console.log("ENDBIND " + x)
+
 				return xxx;
 			}
 
@@ -155,7 +136,7 @@
 		var p = this;
 		return new Parser(function (x) {
 			var ys = p.parse(x);
-			var qWithHistory= result("", ys.history).setId("Nobody").bind(function () {
+			var qWithHistory= result("", ys.history).setId("OR OPTION").bind(function () {
 				return q;
 			});
 			return ys.length > 0 ? ys : qWithHistory.parse(x);
