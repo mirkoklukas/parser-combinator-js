@@ -31,14 +31,16 @@ inputMirror.getDoc().setValue(src);
 
 run.addEventListener("click", function (e) {
 	var src = inputMirror.getDoc().getValue();
+	
 	console.group("Create the AST");
-	console.log("Source string:")
-	console.log(src);
-	console.log("Parsed result:");
-	console.log(Lispy.parse(src));
-	console.log("Evaluated result:");
-	console.log(Lispy.run(src));
+		console.log("Source string:")
+		console.log(src);
+		console.log("Parsed result:");
+		console.log(Lispy.parse(src));
+		console.log("Evaluated result:");
+		console.log(Lispy.run(src));
 	console.groupEnd();
+	
 	output.innerHTML = Lispy.run(src);
 });
 

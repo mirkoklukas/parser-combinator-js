@@ -8,13 +8,42 @@
 	// 	add functions to Parser.prototype using these primitives)
 	// --------------------
 	var Parser  = function (f, id) {
-		//f a:: String --> [(a,String)]
+		//f a:: String --> ([(a,String)], [])
 		this.parse = function (string) {
 			var result = f(string);
+
+			//console.log("PPAAAAAARRRRSSSSEEE")
+			//console.log(result)
+			//console.log(result.history)
+			var addHistory = (function (id) {
+				return function (obj) {
+					//console.log("HHHIIIISSSSSSSTTTOORY");
+					//console.log(obj.history);
+					//console.log(id);
+					if(id !== "Nobody") obj.history = [[id , obj.history || [] ]];
+					else obj.history = obj.history || [];
+					return obj;
+				};
+			})(this.getId());
+
+			// addHistory(result)
+			result = result.length === 0 ? addHistory(result) : result.map(function (r) {
+				return addHistory(r);
+			});
+
 			return result;
+
 		};
 
 		this.id = id || "Nobody";
+
+		this.setId = function (id) {
+			this.id = id;
+			return this;
+		};
+		this.getId = function () {
+			return this.id;
+		}
 	};
 
 	// --------------------
@@ -22,9 +51,14 @@
 	// --------------------
 	var primitives = {};
 
-	var result = primitives.result = function (a) {
+	var result = primitives.result = function (a, history) {
+		var history = history || [];
+
 		return new Parser(function (string)  { 
-			return [[a,string]]; 
+			var res = [a,string];
+			res.history = history;
+			console.log(res.history)
+			return [res]; 
 		}, "Result");
 	};
 
@@ -39,12 +73,12 @@
 	// Same as item
 	var shift = primitives.shift = new Parser(function (string) {
 		return string.length === 0 ? [] : [ [string.charAt(0), string.slice(1)] ];
-	});
+	}, "Shift") ;
 
 	var reShift = primitives.reShift = function (xs) {
 		return new Parser(function(string) {
 			return [["", xs + string]];
-		});
+		}, "Re-Shift") ;
 	};
 
 	// --------------------
@@ -53,17 +87,60 @@
 	var combinators = {};
 
 	Parser.prototype.bind = function (f) {
+
+
 		var p = this;
+
 		return new Parser(function (x) {
+			//console.log("BINDSTART " + x)
 			var ys = p.parse(x);
-			var zs = ys.map(function (y) {
-				ws = f(y[0]).parse(y[1]);
-				return ws.map(function (w) {
-					w[0].history.push(f(y[0]).id);
-					return w;
+			//console.log("ys == ")
+			//console.log(ys)
+			//console.log(">>=")
+			if(ys.length===0) {
+				//console.log("ys == []")
+				//console.log("ENDBIND " + x)
+				return ys;
+			} else {
+				var zs = ys.map(function (y) {
+					//console.log("ys == [.....]")
+					//console.log("y == ")
+					//console.log(y)
+					var ws = f(y[0]).parse(y[1]);
+					//console.log("ws == ")
+					//console.log(ws)
+					if( ws.length === 0) {
+						//console.log("ws == []")
+	
+						ws.history = ws.history.concat(y.history);
+						return ws;
+
+					} else {
+						//console.log("ws == [.....]")
+						var www = ws.map(function (w) {
+							//console.log(w);
+							w.history = w.history.concat(y.history);
+							return w;
+						})	
+						//console.log("ws == ")
+						//console.log( www)
+						return 	www;	
+					}
 				});
-			});
-			return [].concat.apply([], zs);
+
+				var xxx = zs.reduce(function (a,b) {
+					var result = a.concat(b);
+					if(a.length === 0 && b.length === 0) {
+						result.history = a.history;
+					} 
+					return result;
+				});
+				//console.log("zs == ")
+				//console.log(xxx)
+				//console.log("ENDBIND " + x)
+				return xxx;
+			}
+
 		});
 	};
 
@@ -78,8 +155,11 @@
 		var p = this;
 		return new Parser(function (x) {
 			var ys = p.parse(x);
-			return ys.length > 0 ? ys : q.parse(x);
-		});
+			var qWithHistory= result("", ys.history).setId("Nobody").bind(function () {
+				return q;
+			});
+			return ys.length > 0 ? ys : qWithHistory.parse(x);
+		}).setId("OR");
 	};
 
 	Parser.prototype.seq = function (q) {
@@ -221,7 +301,7 @@
 	var char = primitives.char = function (c) {
 		return sat(function (d) { 
 			return c == d; 
-		});
+		}).setId(c);
 	};
 
 	var digit = primitives.digit = sat(function (x) { 
@@ -267,6 +347,17 @@
 		primitives: primitives,
 		combinators: combinators
 	}
+
+
+
+console.log( 
+	char("x").bind(function (_) {
+		return char("z").or(char("s")).bind(function (_) {
+			return result("");
+		});
+}).parse("xa") );
+
+
 
 }(typeof exports === 'undefined' ? this : exports));
 
