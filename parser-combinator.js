@@ -11,14 +11,11 @@
 		//f a:: String --> [(a,String)]
 		this.parse = function (string) {
 
-			var result = f(string)
-			  , id = this.getId()
-			  , addHistory = function (obj) {
-					if(id !== "Nobody") 
-						obj.history = [[id , obj.history || [] ]];
-					else 
-						obj.history = obj.history || [];
-
+			var result = f(string),
+			    id = this.getId(),
+			    addHistory = function (obj) {
+					if(id !== "Nobody") obj.history = [[id , obj.history || [] ]];
+					else obj.history = obj.history || [];
 					return obj;
 				};
 
@@ -293,9 +290,10 @@
 
 	var letter = primitives.letter = lower.plus(upper);
 
-	var space = primitives.space = sat(function (x) {
-		return (x == " ") || (x == "\n") || (x == "\t");
-	});
+	var tab = primitives.tab = char("\t");
+	var newLine = primitives.newLine = char("\n");
+	var space = primitives.space = char(" ").or(tab).or(newLine);
+
 
 	var spaces = primitives.spaces = manyPlus(space).first().bind(function (_) {
 		return result([]);
@@ -323,14 +321,51 @@
 		combinators: combinators
 	}
 
+	var historyWalker = function (history) {
+		var todoList = [history],
+			node = [],
+			id = "",
+			result = [],
+			children;
 
 
-console.log( 
-	char("x").bind(function (_) {
+		while (todoList.length > 0) {
+			node = todoList.pop();
+			// console.log("while")
+			// console.log(node)
+			// if(!node instanceof Array) throw "Unexpected history format...";
+			if( typeof node[0] === "string" ) {
+				id = node[0];
+				children = node.slice(1);
+
+				switch (id) {
+				case "Item":
+					result.push(1);
+					break;
+				case "OR":
+					children = node[1].slice(0,1)
+					break;
+				}
+			} else {
+				children = node.slice();
+			}
+			todoList = todoList.concat(children);
+		}
+
+		return result;
+	};
+
+
+	var src= "xa";
+	var xxx = char("x").bind(function (_) {
 		return char("z").or(char("s")).bind(function (_) {
 			return result("");
 		});
-}).parse("xa") );
+}).setId("Test Programm").parse(src) ;
+
+	console.log(xxx);
+	console.log(src);
+	console.log(historyWalker(xxx.history))
 
 
 
