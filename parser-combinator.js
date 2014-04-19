@@ -45,13 +45,10 @@
 	var primitives = {};
 
 	var result = primitives.result = function (a, history) {
-		var history = history || [];
-
 		return new Parser(function (string)  { 
-			var res = [a,string];
-			res.history = history;
-			console.log(res.history)
-			return [res]; 
+			var r = [a,string];
+			r.history = history || [];
+			return [r]; 
 		}, "Result");
 	};
 
@@ -131,7 +128,7 @@
 				return q;
 			});
 			return ys.length > 0 ? ys : qWithHistory.parse(x);
-		}).setId("OR");
+		}).setId(p.getId() + " OR " + q.getId());
 	};
 
 	Parser.prototype.seq = function (q) {
@@ -364,8 +361,8 @@
 }).setId("Test Programm").parse(src) ;
 
 	console.log(xxx);
-	console.log(src);
-	console.log(historyWalker(xxx.history))
+	// console.log(src);
+	// console.log(historyWalker(xxx.history))
 
 
 
