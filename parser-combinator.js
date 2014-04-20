@@ -3,11 +3,16 @@
 ;(function (exports) { 
 
 	// --------------------
+	// The object that will be populated and exported
+	// --------------------
+	var parserCombinator = {}
+
+	// --------------------
 	// 	Parser constructor. 
 	// 	(Note that we define some prirmitive parsers first and then 
 	// 	add functions to Parser.prototype using these primitives)
 	// --------------------
-	var Parser  = function (f) {
+	var Parser = parserCombinator.Parser =  function (f) {
 		//f a:: String --> [(a,String)]
 		this.parse = f;
 	};
@@ -16,28 +21,27 @@
 	// --------------------
 	//	Primitives
 	// --------------------
-	var primitives = {};
 
-	var result = primitives.result = function (a) {
+	var result = parserCombinator.result = function (a) {
 		return new Parser(function (string)  { 
 			return [[a,string]]; 
 		});
 	};
 
-	var zero = primitives.zero = new Parser(function (string) {
+	var zero = parserCombinator.zero = new Parser(function (string) {
 		return [];
 	});
 
-	var item = primitives.item = new Parser(function (string) {
+	var item = parserCombinator.item = new Parser(function (string) {
 		return string.length === 0 ? [] : [ [string.charAt(0), string.slice(1)] ];
 	});
 
 	// Same as item
-	var shift = primitives.shift = new Parser(function (string) {
+	var shift = parserCombinator.shift = new Parser(function (string) {
 		return string.length === 0 ? [] : [ [string.charAt(0), string.slice(1)] ];
 	});
 
-	var reShift = primitives.reShift = function (xs) {
+	var reShift = parserCombinator.reShift = function (xs) {
 		return new Parser(function(string) {
 			return [["", xs + string]];
 		});
@@ -46,7 +50,6 @@
 	// --------------------
 	//	Combinators
 	// --------------------
-	var combinators = {};
 
 	Parser.prototype.bind = function (f) {
 		var p = this;
@@ -90,7 +93,7 @@
 		};
 	};
 
-	var sat = combinators.sat =  function (f) {
+	var sat = parserCombinator.sat =  function (f) {
 		return item.bind(function (x) {
 				return f(x) === true ? result(x) : zero;
 		});
@@ -99,7 +102,7 @@
 	//many_*:: Parser a --> Parser [a]
 	//The list [a] contains the matches of p, pˆ2, pˆ3,... and []
 	// `many_*` succeeds even if the given parser `p` doesn't 
-	var manyStar = combinators.manyStar = function (p) {
+	var manyStar = parserCombinator.manyStar = function (p) {
 		return p.bind(function (x) {
 			return manyStar(p).bind(function (xs) {
 				return result([x].concat(xs));
@@ -110,7 +113,7 @@
 	// many_+:: Parser a --> Parser [a]
 	// The list [a] contains the matches of p, pˆ2, pˆ3,...
 	// `many_+` only succeeds if the given parser `p` succeeds at least once 
-	var manyPlus = combinators.manyPlus = function (p) {
+	var manyPlus = parserCombinator.manyPlus = function (p) {
 		return p.bind(function (x) {
 			return manyStar(p).bind(function (xs) {
 				return result([x].concat(xs));
@@ -192,7 +195,7 @@
 	};
 
 	// Takes an arbitray number of parsers and function of their results (see example above)
-	var comprehension = combinators.comprehension = function () {
+	var comprehension = parserCombinator.comprehension = function () {
 		// The first (n-1) of the n arguments are expected to be parsers, 
 		// whereas the last argument is a function that takes the results of
 		// these parsers, when applied in the pattern (*) described above
@@ -210,38 +213,38 @@
 	// More Primitives 
 	// (built with the above combinators)
 	// --------------------
-	var char = primitives.char = function (c) {
+	var char = parserCombinator.char = function (c) {
 		return sat(function (d) { 
 			return c == d; 
 		});
 	};
 
-	var digit = primitives.digit = sat(function (x) { 
+	var digit = parserCombinator.digit = sat(function (x) { 
 		return '0' <= x && x <= '9'; 
 	});
 
-	var lower = primitives.lower = sat(function (x) { 
+	var lower = parserCombinator.lower = sat(function (x) { 
 		return 'a' <= x && x <= 'z'; 
 	});
 
-	var upper = primitives.upper = sat(function (x) { 
+	var upper = parserCombinator.upper = sat(function (x) { 
 		return 'A' <= x && x <= 'Z'; 
 	});
 
-	var letter = primitives.letter = lower.plus(upper);
+	var letter = parserCombinator.letter = lower.plus(upper);
 
-	var space = primitives.space = sat(function (x) {
+	var space = parserCombinator.space = sat(function (x) {
 		return (x == " ") || (x == "\n") || (x == "\t");
 	});
 
-	var spaces = primitives.spaces = manyPlus(space).first().bind(function (_) {
+	var spaces = parserCombinator.spaces = manyPlus(space).first().bind(function (_) {
 		return result([]);
 	});
 
-	var alphanum = primitives.alphanum = letter.plus(digit);
+	var alphanum = parserCombinator.alphanum = letter.plus(digit);
 
 	//string:: String --> Parser String
-	var keyword = primitives.keyword = function(str) {
+	var keyword = parserCombinator.keyword = function(str) {
 		if(str === "") return result("");
 
 		var x = str.charAt(0);
@@ -254,11 +257,7 @@
 		});
 	};
 
-	exports.parserCombinator = {
-		parser: Parser,
-		primitives: primitives,
-		combinators: combinators
-	}
+	exports.parserCombinator = parserCombinator;
 
 }(typeof exports === 'undefined' ? this : exports));
 
