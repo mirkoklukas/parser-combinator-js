@@ -3,15 +3,20 @@
 ;(function (exports) { 
 
 	// --------------------
+	// this will be the object we populate and export
+	// --------------------
+	var parserCombinator = {};
+
+	// --------------------
 	// 	Parser constructor. 
 	// 	(Note that we define some prirmitive parsers first and then 
 	// 	add functions to Parser.prototype using these primitives)
 	// --------------------
-	var Parser  = function (f, id) {
+	var Parser  = parserCombinator.Parser = function (f, id) {
 		//f a:: String --> [(a,String)]
-		this.parse = function (string) {
+		this.parse = function (str) {
 
-			var result = f(string),
+			var result = f(str),
 			    id = this.getId(),
 			    addHistory = function (obj) {
 					if(id !== "Nobody") obj.history = [[id , obj.history || [] ]];
@@ -42,9 +47,8 @@
 	// --------------------
 	//	Primitives
 	// --------------------
-	var primitives = {};
 
-	var result = primitives.result = function (a, history) {
+	var result = parserCombinator.result = function (a, history) {
 		return new Parser(function (string)  { 
 			var r = [a,string];
 			r.history = history || [];
@@ -52,20 +56,20 @@
 		}, "Result");
 	};
 
-	var zero = primitives.zero = new Parser(function (string) {
+	var zero = parserCombinator.zero = new Parser(function (string) {
 		return [];
 	}, "Zero");
 
-	var item = primitives.item = new Parser(function (string) {
+	var item = parserCombinator.item = new Parser(function (string) {
 		return string.length === 0 ? [] : [ [string.charAt(0), string.slice(1)] ];
 	}, "Item");
 
 	// Same as item
-	var shift = primitives.shift = new Parser(function (string) {
+	var shift = parserCombinator.shift = new Parser(function (string) {
 		return string.length === 0 ? [] : [ [string.charAt(0), string.slice(1)] ];
 	}, "Shift") ;
 
-	var reShift = primitives.reShift = function (xs) {
+	var reShift = parserCombinator.reShift = function (xs) {
 		return new Parser(function(string) {
 			return [["", xs + string]];
 		}, "Re-Shift") ;
@@ -74,7 +78,6 @@
 	// --------------------
 	//	Combinators
 	// --------------------
-	var combinators = {};
 
 	Parser.prototype.bind = function (f) {
 		var p = this;
@@ -124,10 +127,11 @@
 		var p = this;
 		return new Parser(function (x) {
 			var ys = p.parse(x);
-			var qWithHistory= result("", ys.history).setId("OR OPTION").bind(function () {
-				return q;
-			});
-			return ys.length > 0 ? ys : qWithHistory.parse(x);
+			// var q_withHistory = result("", ys.history).setId("OR OPTION").bind(function () {
+			// 	return q;
+			// });
+			var q_withHistory = q;
+			return ys.length > 0 ? ys : q_withHistory.parse(x);
 		}).setId(p.getId() + " OR " + q.getId());
 	};
 
@@ -147,7 +151,7 @@
 		};
 	};
 
-	var sat = combinators.sat =  function (f) {
+	var sat = parserCombinator.sat =  function (f) {
 		return item.bind(function (x) {
 				return f(x) === true ? result(x) : zero;
 		});
@@ -156,7 +160,7 @@
 	//many_*:: Parser a --> Parser [a]
 	//The list [a] contains the matches of p, pˆ2, pˆ3,... and []
 	// `many_*` succeeds even if the given parser `p` doesn't 
-	var manyStar = combinators.manyStar = function (p) {
+	var manyStar = parserCombinator.manyStar = function (p) {
 		return p.bind(function (x) {
 			return manyStar(p).bind(function (xs) {
 				return result([x].concat(xs));
@@ -167,7 +171,7 @@
 	// many_+:: Parser a --> Parser [a]
 	// The list [a] contains the matches of p, pˆ2, pˆ3,...
 	// `many_+` only succeeds if the given parser `p` succeeds at least once 
-	var manyPlus = combinators.manyPlus = function (p) {
+	var manyPlus = parserCombinator.manyPlus = function (p) {
 		return p.bind(function (x) {
 			return manyStar(p).bind(function (xs) {
 				return result([x].concat(xs));
@@ -249,7 +253,7 @@
 	};
 
 	// Takes an arbitray number of parsers and function of their results (see example above)
-	var comprehension = combinators.comprehension = function () {
+	var comprehension = parserCombinator.comprehension = function () {
 		// The first (n-1) of the n arguments are expected to be parsers, 
 		// whereas the last argument is a function that takes the results of
 		// these parsers, when applied in the pattern (*) described above
@@ -262,44 +266,42 @@
 		});
 	};
 
-
 	// --------------------
 	// More Primitives 
 	// (built with the above combinators)
 	// --------------------
-	var char = primitives.char = function (c) {
+	var char = parserCombinator.char = function (c) {
 		return sat(function (d) { 
 			return c == d; 
 		}).setId(c);
 	};
 
-	var digit = primitives.digit = sat(function (x) { 
+	var digit = parserCombinator.digit = sat(function (x) { 
 		return '0' <= x && x <= '9'; 
 	});
 
-	var lower = primitives.lower = sat(function (x) { 
+	var lower = parserCombinator.lower = sat(function (x) { 
 		return 'a' <= x && x <= 'z'; 
 	});
 
-	var upper = primitives.upper = sat(function (x) { 
+	var upper = parserCombinator.upper = sat(function (x) { 
 		return 'A' <= x && x <= 'Z'; 
 	});
 
-	var letter = primitives.letter = lower.plus(upper);
+	var letter = parserCombinator.letter = lower.plus(upper);
 
-	var tab = primitives.tab = char("\t");
-	var newLine = primitives.newLine = char("\n");
-	var space = primitives.space = char(" ").or(tab).or(newLine);
+	var tab = parserCombinator.tab = char("\t");
+	var newLine = parserCombinator.newLine = char("\n");
+	var space = parserCombinator.space = char(" ").or(tab).or(newLine);
 
-
-	var spaces = primitives.spaces = manyPlus(space).first().bind(function (_) {
+	var spaces = parserCombinator.spaces = manyPlus(space).first().bind(function (_) {
 		return result([]);
 	});
 
-	var alphanum = primitives.alphanum = letter.plus(digit);
+	var alphanum = parserCombinator.alphanum = letter.plus(digit);
 
 	//string:: String --> Parser String
-	var keyword = primitives.keyword = function(str) {
+	var keyword = parserCombinator.keyword = function(str) {
 		if(str === "") return result("");
 
 		var x = str.charAt(0);
@@ -312,11 +314,7 @@
 		});
 	};
 
-	exports.parserCombinator = {
-		parser: Parser,
-		primitives: primitives,
-		combinators: combinators
-	}
+	exports.parserCombinator = parserCombinator;
 
 	var historyWalker = function (history) {
 		var todoList = [history],
@@ -351,7 +349,6 @@
 
 		return result;
 	};
-
 
 	var src= "xa";
 	var xxx = char("x").bind(function (_) {
