@@ -244,7 +244,6 @@
 
 	var alphanum = parserCombinator.alphanum = letter.plus(digit);
 
-	//string:: String --> Parser String
 	var keyword = parserCombinator.keyword = function(str) {
 		if(str === "") return result("");
 
