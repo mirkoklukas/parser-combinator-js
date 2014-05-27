@@ -17,28 +17,27 @@ var Lispy = (function (parserCombinator) {
 	// To keep notation tight we start with populating the local
 	// scope with the parts of the parser combinator we need.
 	// 
-	var $ = parserCombinator,
+	var paCo = parserCombinator,
 		manyPlus = function (p) {
-			return $.combinators.manyPlus(p).fold();
+			return paCo.manyPlus(p).fold();
 		},
 		manyStar = function (p) {
-			return $.combinators.manyStar(p).fold();
+			return paCo.manyStar(p).fold();
 		},
-		sat = $.combinators.sat,
-		comprehension = $.combinators.comprehension
-
-	var result = $.primitives.result,
-		char = $.primitives.char,
-		digit = $.primitives.digit,
-		letter = $.primitives.letter,
-		shift = $.primitives.shift,
-		reShift = $.primitives.reShift,
-		space = $.primitives.space,
-		spaces = $.primitives.spaces,
-		symbol = sat(function (x) {
+		sat 	= paCo.sat,
+		comprehension = paCo.comprehension,
+		result 	= paCo.result,
+		char 	= paCo.char,
+		digit 	= paCo.digit,
+		letter 	= paCo.letter,
+		shift 	= paCo.shift,
+		reShift = paCo.reShift,
+		space 	= paCo.space,
+		spaces 	= paCo.spaces,
+		symbol 	= sat(function (x) {
 			return "!#$%&|*+-/:<=>?@^_~".indexOf(x) > -1;
 		}),
-		sign = shift.bind(function (x) {
+		sign 	= shift.bind(function (x) {
 			return (x === "+" || x === "-") ?  result(x) : reShift(x);
 		});
 
@@ -56,9 +55,9 @@ var Lispy = (function (parserCombinator) {
 		});
 	});
 
-	// var NUMBER = comprehension(sign, POSITIVE_NUMBER, function (sign, n) {
-	// 	return Number(sign + n);
-	// });
+	var NUMBER = comprehension(sign, POSITIVE_NUMBER, function (sign, n) {
+		return Number(sign + n);
+	});
 
 	var IDENTIFIER = letter.or(symbol).bind(function (first) {
 		return manyStar(letter.or(digit).or(symbol)).bind(function (rest) {
@@ -88,7 +87,9 @@ var Lispy = (function (parserCombinator) {
 					return result(l);
 				});
 			});
-		}).parse(src);
+		}).parse(src);  
+		
+		if(parsedSrc.length === 0) throw "The synthax of your source code is not accurate... :(";
 
 		return parsedSrc.length > 0 ? parsedSrc[0][0] : null;
 	};
