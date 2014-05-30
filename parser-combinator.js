@@ -127,10 +127,10 @@
 		var p = this;
 		return new Parser(function (x) {
 			var ys = p.parse(x);
-			// var q_withHistory = result("", ys.history).setId("OR OPTION").bind(function () {
-			// 	return q;
-			// });
-			var q_withHistory = q;
+			var q_withHistory = result("", ys.history).setId("OR OPTION").bind(function () {
+				return q;
+			});
+			// var q_withHistory = q;
 			return ys.length > 0 ? ys : q_withHistory.parse(x);
 		}).setId(p.getId() + " OR " + q.getId());
 	};
@@ -355,7 +355,7 @@
 		return char("z").or(char("s")).bind(function (_) {
 			return result("");
 		});
-}).setId("Test Programm").parse(src) ;
+	}).setId("Test Programm").parse(src) ;
 
 	console.log(xxx);
 	// console.log(src);
