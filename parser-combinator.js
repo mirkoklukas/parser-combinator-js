@@ -125,10 +125,10 @@
 	// The Combinator manyPlus behaves almost like manyStar with the
 	// following difference: it only succeeds if the given parser 
 	// p succeeds at least once 
-	var manyPlus = parserCombinator.manyPlus = function (p) {
+	var manyPlus = parserCombinator.manyPlus = function (p, folded) {
 		return p.bind(function (x) {
 			return manyStar(p).bind(function (xs) {
-				return result([x].concat(xs));
+				return folded ? result([x].concat(xs)).fold() : result([x].concat(xs));
 			})
 		});
 	};
