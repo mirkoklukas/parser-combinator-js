@@ -1,15 +1,12 @@
-var input = document.getElementById("input-container");
-var output = document.getElementById("output");
-var run = document.getElementById("btn-run");
-
-
-var inputMirror = CodeMirror(input, {
-    lineNumbers: true
-});
-
-// inputMirror.setOption("theme", "pastel-on-dark");
-
-
+// --------------------
+// Create the GUI
+// --------------------
+var input = document.getElementById("input-container"),
+	output = document.getElementById("output"),
+	runBtn = document.getElementById("btn-run"),
+	inputMirror = CodeMirror(input, {
+    	lineNumbers: true
+	});
 
 // --------------------
 // Our sample programm source code
@@ -28,28 +25,20 @@ var src = '(begin ' + '\n\t' +
 
 inputMirror.getDoc().setValue(src);
 
+// --------------------
+// What is a run button wihtout a "click"-listener
+// --------------------
+runBtn.addEventListener("click", function (e) {
+	var src = inputMirror.getDoc().getValue(),
+		parsed = Lispy.parse(src),
+		result = output.innerHTML = Lispy.run(src);
 
-run.addEventListener("click", function (e) {
-	var src = inputMirror.getDoc().getValue();
-	console.group("Create the AST");
+	console.group("RUN the whole thing....");
 	console.log("Source string:")
 	console.log(src);
 	console.log("Parsed result:");
-	console.log(Lispy.parse(src));
+	console.log(parsed);
 	console.log("Evaluated result:");
-	console.log(Lispy.run(src));
+	console.log(result);
 	console.groupEnd();
-	output.innerHTML = Lispy.run(src);
 });
-
-// --------------------
-// Parse and execute the example-code
-// --------------------
-// console.group("Create the AST");
-// console.log("Source string:")
-// console.log(src);
-// console.log("Parsed result:");
-// console.log(Lispy.parse(src));
-// console.log("Evaluated result:");
-// console.log(Lispy.run(src));
-// console.groupEnd();

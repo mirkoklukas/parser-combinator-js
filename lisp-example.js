@@ -1,14 +1,6 @@
 
-var Lispy = (function (parserCombinator) {
 
-	// --------------------
-	// The scope object: where expressions save their variables
-	// (e.g. the `evaluate` method is called with an expression together with 
-	// a resp. scope)
-	// --------------------
-	var createScope = function (outerScope) {
-		return Object.create( outerScope || {});
-	};
+var Lispy = (function (parserCombinator) {
 
 	// --------------------
 	//  The parser pieces
@@ -16,74 +8,72 @@ var Lispy = (function (parserCombinator) {
 
 	// To keep notation tight we start with populating the local
 	// scope with the parts of the parser combinator we need.
-	// 
-	var paCo = parserCombinator,
-		manyPlus = function (p) {
-			return paCo.manyPlus(p).fold();
-		},
-		manyStar = function (p) {
-			return paCo.manyStar(p).fold();
-		},
-		sat 	= paCo.sat,
-		comprehension = paCo.comprehension,
-		result 	= paCo.result,
-		char 	= paCo.char,
-		digit 	= paCo.digit,
-		letter 	= paCo.letter,
-		shift 	= paCo.shift,
-		reShift = paCo.reShift,
-		space 	= paCo.space,
-		spaces 	= paCo.spaces,
-		symbol 	= sat(function (x) {
-			return "!#$%&|*+-/:<=>?@^_~".indexOf(x) > -1;
-		}),
-		sign 	= shift.bind(function (x) {
-			return (x === "+" || x === "-") ?  result(x) : reShift(x);
-		});
+	var manyPlus = parserCombinator.manyPlus,
+		manyStar = parserCombinator.manyStar,
+		sat 	 = parserCombinator.sat,
+		comprehension = parserCombinator.comprehension,
+		result 	 = parserCombinator.result,
+		char 	 = parserCombinator.char,
+		digit 	 = parserCombinator.digit,
+		letter 	 = parserCombinator.letter,
+		shift 	 = parserCombinator.shift,
+		reShift  = parserCombinator.reShift,
+		space 	 = parserCombinator.space,
+		spaces 	 = parserCombinator.spaces;
 
-	var POSITIVE_NUMBER = manyPlus(digit).bind(function (a) {
+
+	var	symbol 	 = sat(function (x) {
+		return "!#$%&|*+-/:<=>?@^_~".indexOf(x) > -1;
+	});
+
+	var sign 	= shift.bind(function (x) {
+		return (x === "+" || x === "-") ?  result(x) : reShift(x);
+	});
+
+	var positiveNumber = manyPlus(digit, true).bind(function (a) {
 		return char(".").bind(function (dot) {
-			return manyPlus(digit).bind(function (b) {
+			return manyPlus(digit, true).bind(function (b) {
 				return result(Number(a + "." + b));
 			});
 		}).or(result(Number(a)));
 	});
 
-	var NUMBER = sign.bind(function (sign) {
-		return POSITIVE_NUMBER.bind(function (n) {
+	var number = sign.bind(function (sign) {
+		return positiveNumber.bind(function (n) {
 			return result(Number(sign + n));
 		});
 	});
 
-	var NUMBER = comprehension(sign, POSITIVE_NUMBER, function (sign, n) {
-		return Number(sign + n);
-	});
+	// var number = comprehension(sign, positiveNumber, function (sign, n) {
+	// 	return Number(sign + n);
+	// });
 
-	var IDENTIFIER = letter.or(symbol).bind(function (first) {
-		return manyStar(letter.or(digit).or(symbol)).bind(function (rest) {
+	var identifier = letter.or(symbol).bind(function (first) {
+		return manyStar(letter.or(digit).or(symbol), true).bind(function (rest) {
 				return  result(first + rest);
 		});
 	});
 
 	// Non-list expressions
-	var ATOM = IDENTIFIER.or(NUMBER);
+	var atom = identifier.or(number);
 
-	var LIST = char("(").bind(function (_) {
-		return (ATOM.or(LIST)).sepByPlus(spaces).bind(function (exprs) {
-			return manyStar(space).bind(function (_) {
+	var list = char("(").bind(function (_) {
+		return (atom.or(list)).sepByPlus(spaces).bind(function (exprs) {
+			return manyStar(space, true).bind(function (_) {
 				return char(")").bind(function (_) { 
 					return result(exprs);
 				});
 			});	
 		});
 	});
+
 	// --------------------
 	// Create the AST in terms of nested lists
 	// --------------------
 	var parse = function(src) {
-		var parsedSrc = manyStar(space).bind(function (_) {
-			return LIST.bind(function (l) {
-				return manyStar(space).bind(function (_) {
+		var parsedSrc = manyStar(space, true).bind(function (_) {
+			return list.bind(function (l) {
+				return manyStar(space, true).bind(function (_) {
 					return result(l);
 				});
 			});
@@ -92,6 +82,15 @@ var Lispy = (function (parserCombinator) {
 		if(parsedSrc.length === 0) throw "The synthax of your source code is not accurate... :(";
 
 		return parsedSrc.length > 0 ? parsedSrc[0][0] : null;
+	};
+
+	// --------------------
+	// The scope object: where expressions save their variables
+	// (e.g. the `evaluate` method is called with an expression together with 
+	// a resp. scope)
+	// --------------------
+	var createScope = function (outerScope) {
+		return Object.create( outerScope || {});
 	};
 
 	// --------------------
@@ -190,14 +189,13 @@ var Lispy = (function (parserCombinator) {
 		"OR": function (a,b) { return a || b; }
 	});
 
-
 	// --------------------
 	// 	Return the interpreter object
 	// --------------------
 	return {
 		parse: parse,
 		run: function (src) {
-			return evaluate(parse(src), globalScope);
+			return evaluate(this.parse(src), globalScope);
 		}
 	};
 

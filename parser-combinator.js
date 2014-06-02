@@ -7,22 +7,19 @@
 	// --------------------
 	var parserCombinator = {}
 
-
 	// --------------------
 	// 	Parser constructor. 
-	// 	(Note that we define some prirmitive parsers first and then 
+	// 	(NOTE that we define some prirmitive parsers first and then 
 	// 	add functions to Parser.prototype using these primitives)
+	// 	The signature of the parse function f needs to be f:String --> [[a,String]]
 	// --------------------
 	var Parser = parserCombinator.Parser =  function (f) {
-		//f a:: String --> [(a,String)]
 		this.parse = f;
 	};
-
 
 	// --------------------
 	//	Primitives
 	// --------------------
-
 	var result = parserCombinator.result = function (a) {
 		return new Parser(function (string)  { 
 			return [[a,string]]; 
@@ -37,7 +34,7 @@
 		return string.length === 0 ? [] : [ [string.charAt(0), string.slice(1)] ];
 	});
 
-	// Same as item
+	// same as item
 	var shift = parserCombinator.shift = new Parser(function (string) {
 		return string.length === 0 ? [] : [ [string.charAt(0), string.slice(1)] ];
 	});
@@ -51,13 +48,12 @@
 	// --------------------
 	//	Combinators
 	// --------------------
-
 	Parser.prototype.bind = function (f) {
 		var p = this;
 		return new Parser(function (x) {
 			var ys = p.parse(x);
-			var zs = ys.map(function (y) {
-				return f(y[0]).parse(y[1]);
+			var	zs = ys.map(function (y) {
+					return f(y[0]).parse(y[1]);
 			});
 			return [].concat.apply([], zs);
 		});
@@ -100,29 +96,6 @@
 		});
 	};
 
-	//many_*:: Parser a --> Parser [a]
-	//The list [a] contains the matches of p, pˆ2, pˆ3,... and []
-	// `many_*` succeeds even if the given parser `p` doesn't 
-	var manyStar = parserCombinator.manyStar = function (p) {
-		return p.bind(function (x) {
-			return manyStar(p).bind(function (xs) {
-				return result([x].concat(xs));
-			})
-		}).plus(result([]));
-	};
-
-	// many_+:: Parser a --> Parser [a]
-	// The list [a] contains the matches of p, pˆ2, pˆ3,...
-	// `many_+` only succeeds if the given parser `p` succeeds at least once 
-	var manyPlus = parserCombinator.manyPlus = function (p) {
-		return p.bind(function (x) {
-			return manyStar(p).bind(function (xs) {
-				return result([x].concat(xs));
-			})
-		});
-	};
-
-	//fold:: Parser [a] --> Parser a
 	Parser.prototype.fold = function() {
 		var p = this;
 		return p.bind(function (xs) {
@@ -138,6 +111,30 @@
 		});
 	};
 
+	//	The Combinator manyStar takes a parser p and returns a parser
+	// 	whose list of results contains the matches of p, pˆ2, pˆ3,... and []
+	//  Note that manyStar succeeds even if the given parser `p` doesn't 
+	var manyStar = parserCombinator.manyStar = function (p, folded) {
+		return p.bind(function (x) {
+			return manyStar(p).bind(function (xs) {
+				return folded ? result([x].concat(xs)).fold() : result([x].concat(xs));
+			})
+		}).plus(result([]));
+	};
+
+	// The Combinator manyPlus behaves almost like manyStar with the
+	// following difference: it only succeeds if the given parser 
+	// p succeeds at least once 
+	var manyPlus = parserCombinator.manyPlus = function (p) {
+		return p.bind(function (x) {
+			return manyStar(p).bind(function (xs) {
+				return result([x].concat(xs));
+			})
+		});
+	};
+
+
+
 	// // Independent alternative for Parser.prototype.first 
 	// var first = function(p) {
 	// 	return new Parser(function (x) {
@@ -146,13 +143,14 @@
 	// 	});
 	// };
 
-	//sepby_+: Parser a --> Parser b --> Parser [a]
+	// This function called upon a parser p takes a parser sep and 
+	// returns a parser that consequtively applies p followed by sep.
 	Parser.prototype.sepByPlus = function (sep) {
 		var p = this;
 		return p.bind(function (x) {
-			return manyStar( sep.bind(function (_) { return p; }) ).bind(function (xs) {
-					return result([x].concat(xs));
-				})
+			return manyStar(sep.bind(function (_) { return p; })).bind(function (xs) {
+				return result([x].concat(xs));
+			})
 		});
 	};
 
@@ -173,7 +171,7 @@
 
 	// --------------------
 	// `comprehension` is syntactic sugar for a common
-	// pattern, (*) say, that arises while working parser combinators, namely:
+	// pattern, that arises while working with parser combinators, namely:
 	// 		
 	// 		comprehension(p1, p2, p3, function f(x1, x2, x3) { ... }) 
 	//
@@ -195,11 +193,9 @@
 		};
 	};
 
-	// Takes an arbitray number of parsers and function of their results (see example above)
+	// Takes an arbitray number of parsers and a function of their results 
+	// (see example above)
 	var comprehension = parserCombinator.comprehension = function () {
-		// The first (n-1) of the n arguments are expected to be parsers, 
-		// whereas the last argument is a function that takes the results of
-		// these parsers, when applied in the pattern (*) described above
 		var args = [].slice.call(arguments)
 		  , ps = args.slice(0,-1)
 		  , f = args[args.length - 1];
