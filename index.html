@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Parser-combinator-js by mirkoklukas</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Parser-combinator-js</h1>
+        <p>A Javascript implementation of the monadic parser combinators defined by G. Hutton and E. Meijer.</p>
+
+        <p class="view"><a href="https://github.com/mirkoklukas/parser-combinator-js">View the Project on GitHub <small>mirkoklukas/parser-combinator-js</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/mirkoklukas/parser-combinator-js/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/mirkoklukas/parser-combinator-js/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/mirkoklukas/parser-combinator-js">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="monadic-parsing-in-javascript" class="anchor" href="#monadic-parsing-in-javascript"><span class="octicon octicon-link"></span></a>Monadic parsing in JavaScript</h1>
+
+<p>A Javascript implementation of (some of) the <em>monadic parser combinators</em> defined by G. Hutton and E. Meijer (cf. [1], see below).</p>
+
+<p>You can see the combinators in action here (the combinators are used to define the parsing function): <a href="http://mirkoklukas.github.io/parser-combinator-js/demo/">Lisp interpreter</a></p>
+
+<p>[1] G. Hutton and E. Meijer, <em>Monadic parsing in Haskell</em>, Journal of Functional Programming <strong>8</strong>, Cambridge University Press (1998), 437–444.</p>
+
+<h2>
+<a name="what-is-it" class="anchor" href="#what-is-it"><span class="octicon octicon-link"></span></a>What is it</h2>
+
+<p>A <strong>monadic parser combinator</strong> is a higher-order functions that produces, and serves as building block for a more specific <em>parser</em>. In our context a <strong>parser</strong> can be understood as a funcion that takes a <code>string</code> and returns a list of tuples <code>[(a,string), ...,(a,string)]</code> of some data type <code>a</code> and another <code>string</code>. The first component of the tupel can be understood as the result of the parser (e.g. another string, a single character, or a abstract synthax tree), whereas the second component is the remaining string (i.e. the part of the string that hasn't yet been "consumend" by the parser). The empty list <code>[]</code> indicates a failed approach of parsing the given string. The term <em>monadic</em> refers to the fact that we can endow the the set of parsers with an additional structure -- we'll dive into that later.</p>
+
+<p><strong>Examples</strong>. Here is a simple parsing function that simply consumes the letter "x":</p>
+
+<div class="highlight highlight-JavaScript"><pre><span class="kd">var</span> <span class="nx">x</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">string</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">first</span> <span class="o">=</span> <span class="nx">string</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+      <span class="nx">rest</span>  <span class="o">=</span> <span class="nx">string</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">first</span> <span class="o">===</span> <span class="s2">"x"</span><span class="p">)</span> <span class="k">return</span> <span class="p">[[</span><span class="s2">"x"</span><span class="p">,</span> <span class="nx">rest</span><span class="p">]];</span>
+  <span class="k">else</span> <span class="k">return</span> <span class="p">[];</span>
+<span class="p">}</span>
+
+<span class="nx">x</span><span class="p">(</span><span class="s2">"xyz"</span><span class="p">);</span> <span class="c1">// [["x", "yz"]] </span>
+<span class="nx">x</span><span class="p">(</span><span class="s2">"zyx"</span><span class="p">);</span> <span class="c1">// [] </span>
+
+</pre></div>
+
+<p>...</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/mirkoklukas">mirkoklukas</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
