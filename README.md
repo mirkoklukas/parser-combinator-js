@@ -13,15 +13,15 @@ A **monadic parser combinator** is a higher-order functions that produces, and s
 
 **Examples**. Here is a simple parsing function that simply consumes the letter "x":
 ```JavaScript
-var myFirstParsingFunction = function (string) {
+var x = function (string) {
   var first = string.charAt(0),
       rest  = string.slice(1);
   if (first === "x") return [["x", rest]];
   else return [];
 }
 
-myFirstParsingFunction("xyz"); // [["x", "yz"]] 
-myFirstParsingFunction("zyx"); // [] 
+x("xyz"); // [["x", "yz"]] 
+x("zyx"); // [] 
 
 ```
 
