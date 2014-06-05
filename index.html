@@ -40,21 +40,41 @@
 <h2>
 <a name="what-is-it" class="anchor" href="#what-is-it"><span class="octicon octicon-link"></span></a>What is it</h2>
 
-<p>A <strong>(monadic) parser combinator</strong> is a higher-order functions that produces, and serves as building block for a more specific <em>parser</em>. In our context a <strong>parser</strong> can be understood as a funcion that takes a <code>string</code> and returns a list of tuples <code>[(a,string), ...,(a,string)]</code> of some data type <code>a</code> and another <code>string</code>. The first component of the tupel can be understood as the result of the parser (e.g. another string, a single character, or a abstract synthax tree), whereas the second component is the remaining string (i.e. the part of the string that hasn't yet been "consumend" by the parser). The empty list <code>[]</code> indicates a failed approach of parsing the given string. The term <em>monadic</em> refers to the fact that we can endow the the set of parsers with an additional structure -- we'll dive into that later.</p>
+<p>A <strong>(monadic) parser combinator</strong> is a higher-order functions that produces, and serves as building block for a more specific <em>parser</em>. In our context a <strong>parser</strong> can be understood as a funcion that takes a string, <code>x</code> say, and returns a list of tuples <code>[(a_1, y_1), ...,(a_n, y_n)]</code>, where the <code>a_i</code> are of some previously fixed data type <code>A</code> and the <code>y_i</code> are strings as well. The first component of the tupel can be understood as the result of the parser (e.g. another string, a single character, or a abstract synthax tree), whereas the second component is the remaining string (i.e. the part of the string that hasn't yet been "consumend" by the parser). The empty list <code>[]</code> indicates a failed approach of parsing the given string. The term <em>monadic</em> refers to the fact that we can endow the the set of parsers with an additional structure -- we'll dive into that later.</p>
 
-<p><strong>Examples</strong>. Here is a simple parsing function that simply consumes the letter "x":</p>
+<p><strong>Examples</strong>. Here is a simple parsing function that simply consumes the letter "z":</p>
 
-<div class="highlight highlight-JavaScript"><pre><span class="kd">var</span> <span class="nx">x</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">string</span><span class="p">)</span> <span class="p">{</span>
+<div class="highlight highlight-JavaScript"><pre><span class="kd">var</span> <span class="nx">z</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">string</span><span class="p">)</span> <span class="p">{</span>
   <span class="kd">var</span> <span class="nx">first</span> <span class="o">=</span> <span class="nx">string</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
       <span class="nx">rest</span>  <span class="o">=</span> <span class="nx">string</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
-  <span class="k">if</span> <span class="p">(</span><span class="nx">first</span> <span class="o">===</span> <span class="s2">"x"</span><span class="p">)</span> <span class="k">return</span> <span class="p">[[</span><span class="s2">"x"</span><span class="p">,</span> <span class="nx">rest</span><span class="p">]];</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">first</span> <span class="o">===</span> <span class="s2">"z"</span><span class="p">)</span> <span class="k">return</span> <span class="p">[[</span><span class="s2">"z"</span><span class="p">,</span> <span class="nx">rest</span><span class="p">]];</span>
   <span class="k">else</span> <span class="k">return</span> <span class="p">[];</span>
 <span class="p">}</span>
 
-<span class="nx">x</span><span class="p">(</span><span class="s2">"xyz"</span><span class="p">);</span> <span class="c1">// [["x", "yz"]] </span>
-<span class="nx">x</span><span class="p">(</span><span class="s2">"zyx"</span><span class="p">);</span> <span class="c1">// [] </span>
-
+<span class="nx">z</span><span class="p">(</span><span class="s2">"zoo"</span><span class="p">);</span> <span class="c1">// [["z", "oo"]] </span>
+<span class="nx">z</span><span class="p">(</span><span class="s2">"shoe"</span><span class="p">);</span> <span class="c1">// [] </span>
 </pre></div>
+
+<h4>
+<a name="monadic-behaviour" class="anchor" href="#monadic-behaviour"><span class="octicon octicon-link"></span></a>Monadic behaviour</h4>
+
+<p>For simplicity let's agree on the following math-like notation for a (parsing) function that takes an argument <code>x</code> of some type <code>A</code> and returns a value <code>p(x)</code> of some type <code>B</code>:</p>
+
+<pre><code>f: A  ---&gt; B
+   x |---&gt; f(x).
+</code></pre>
+
+<p>Let's forget for a moment that a parsing function actually returns a list of results <code>[(a_1, y_1), ...,(a_n, y_n)]</code> and assume that it just returns single tupel <code>(a, y)</code>. Now suppose we have two parsing functions <code>P</code> and <code>Q</code>. One could easily define a new parser by the concatenation of the two, i.e. we define a parsing function <code>P*Q</code> by</p>
+
+<pre><code>P*Q: x |---&gt; P(x)=(a, y) |---&gt; Q(y)=(b, z).
+</code></pre>
+
+<p>There is nothing wrong with this approach, however the final result <code>(b,z)</code> does not depend on the intermediate result <code>a</code> of the first function <code>P</code>. So the natural evolution of the above approach would be the following</p>
+
+<pre><code>P `bind` f: x |---&gt; P(x)=(a, y) |---&gt; (f(a))(y)=(b, z).
+</code></pre>
+
+<p>Instead of <code>Q</code> we hand over a function <code>f: A ---&gt; Parser</code>, i.e. given some <code>a</code> the received functin value <code>f(a)</code> is a parsing function itself. </p>
 
 <p>...</p>
       </section>
