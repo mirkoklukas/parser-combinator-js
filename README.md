@@ -25,21 +25,24 @@ z("shoe"); // []
 ```
 
 #### Monadic behaviour
-For simplicity let's agree on the following math-like notation for a function that takes an argument `x` of some type `A` and returns a value `f(x)` of some type `B`:
+For simplicity let's agree on the following mathy notation for a function that takes an argument `x` of some type `A` and returns a value `f(x)` of some type `B`:
 ```
 f: A  ---> B
    x |---> f(x).
 ```
-In particular a parsing function is map `String ---> (A×String)×...×(A×String)`
-Let's forget for a moment that a parsing function actually returns a list of results `[(a_1, y_1), ...,(a_n, y_n)]` and assume that it just returns single tupel `(a, y)`. Now suppose we have two parsing functions `P` and `Q`. One could easily define a new parser by the concatenation of the two, i.e. we define a parsing function `P*Q` by
+In particular a parsing function is map 
+```
+String ---> (A×String)×...×(A×String)
+```
+Let's forget for a moment that a parsing function actually returns a list of results `[(a_1, y_1), ...,(a_n, y_n)]` and assume that it just returns single tupel `(a, y)`. Furthermore suppose we are given two parsing functions `P` and `Q`. One could easily define a new parsing function `P*Q` by
 ```
 P*Q: x |---> P(x)=(a, y) |---> Q(y)=(b, z).
 ```
-There is nothing wrong with this approach, however the final result `(b,z)` does not depend on the intermediate result `a` of the first function `P`. So the natural evolution of the above approach would be the following
+There is nothing wrong with this approach, however the final result `(b,z)` does not depend on the intermediate result `a` of the first function `P` at all. The natural evolution of the above approach would be the following
 ```
 P `bind` f: x |---> P(x)=(a, y) |---> (f(a))(y)=(b, z).
 ```
-Note that we replaced `Q` by a function `f: A ---> Parser`, i.e. given some `a` the received functin value `f(a)` is a parsing function itself. 
+Note that we replaced `Q` by a function `f: A ---> Parser`, i.e. given some `a` the received function value `f(a)` is a parsing function itself. 
 
 
 ...
