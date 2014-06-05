@@ -116,7 +116,7 @@
 	//  Note that manyStar succeeds even if the given parser `p` doesn't 
 	var manyStar = parserCombinator.manyStar = function (p, folded) {
 		return p.bind(function (x) {
-			return manyStar(p).bind(function (xs) {
+			return manyStar(p, folded).bind(function (xs) {
 				return folded ? result([x].concat(xs)).fold() : result([x].concat(xs));
 			})
 		}).plus(result([]));
@@ -127,7 +127,7 @@
 	// p succeeds at least once 
 	var manyPlus = parserCombinator.manyPlus = function (p, folded) {
 		return p.bind(function (x) {
-			return manyStar(p).bind(function (xs) {
+			return manyStar(p, folded).bind(function (xs) {
 				return folded ? result([x].concat(xs)).fold() : result([x].concat(xs));
 			})
 		});

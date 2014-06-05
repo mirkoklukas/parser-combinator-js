@@ -21,7 +21,7 @@ var Lispy = (function (parserCombinator) {
 		space 	 = parserCombinator.space,
 		spaces 	 = parserCombinator.spaces;
 
-
+	debugger
 	var	symbol 	 = sat(function (x) {
 		return "!#$%&|*+-/:<=>?@^_~".indexOf(x) > -1;
 	});
