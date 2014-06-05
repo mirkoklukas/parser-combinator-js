@@ -25,14 +25,14 @@ z("shoe"); // []
 ```
 
 #### Monadic behaviour
-For simplicity let's agree on the following mathy notation for a function that takes an argument `x` of some type `A` and returns a value `f(x)` of some type `B`:
+**Bind**. For simplicity let's agree on the following mathy notation for a function that takes an argument `x` of some type `A` and returns a value `f(x)` of some type `B`:
 ```
 f: A  ---> B
    x |---> f(x).
 ```
 In particular a parsing function is map 
 ```
-String ---> (A×String)×...×(A×String)
+String ---> (A×String)^∞ := (A×String) ⋃ (A×String)×(A×String) ⋃ (A×String)×(A×String)×(A×String) ⋃ ...
 ```
 Let's forget for a moment that a parsing function actually returns a list of results `[(a_1, y_1), ...,(a_n, y_n)]` and assume that it just returns single tupel `(a, y)`. Furthermore suppose we are given two parsing functions `P` and `Q`. One could easily define a new parsing function `P*Q` by
 ```
