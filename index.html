@@ -58,7 +58,7 @@
 <h4>
 <a name="monadic-behaviour" class="anchor" href="#monadic-behaviour"><span class="octicon octicon-link"></span></a>Monadic behaviour</h4>
 
-<p>For simplicity let's agree on the following mathy notation for a function that takes an argument <code>x</code> of some type <code>A</code> and returns a value <code>f(x)</code> of some type <code>B</code>:</p>
+<p><strong>Bind</strong>. For simplicity let's agree on the following mathy notation for a function that takes an argument <code>x</code> of some type <code>A</code> and returns a value <code>f(x)</code> of some type <code>B</code>:</p>
 
 <pre><code>f: A  ---&gt; B
    x |---&gt; f(x).
@@ -66,7 +66,7 @@
 
 <p>In particular a parsing function is map </p>
 
-<pre><code>String ---&gt; (A×String)×...×(A×String)
+<pre><code>String ---&gt; (A×String)^∞ := (A×String) ⋃ (A×String)^2 ⋃ (A×String)^3 ⋃ ...
 </code></pre>
 
 <p>Let's forget for a moment that a parsing function actually returns a list of results <code>[(a_1, y_1), ...,(a_n, y_n)]</code> and assume that it just returns single tupel <code>(a, y)</code>. Furthermore suppose we are given two parsing functions <code>P</code> and <code>Q</code>. One could easily define a new parsing function <code>P*Q</code> by</p>
