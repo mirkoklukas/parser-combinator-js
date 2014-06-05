@@ -24,16 +24,19 @@ z("zoo"); // [["z", "oo"]]
 z("shoe"); // [] 
 ```
 
-For simplicity let's agree on the following haskell like notation for a function that takes an argument `x` and returns a value `f(x)`:
+For simplicity let's agree on the following haskell like notation for a (parsing) function that takes an argument `x` and returns a value `p(x)`:
 ```
-f: x |---> f(x)
+P: x |---> P(x)
 ```
-Let's forget for a moment that a parsing function actually returns a list of results `[(a_1, y_1), ...,(a_n, y_n)]` and assume that it just returns single tupel `(a, y)`. Now suppose we have two parsing functions `f` and `g`. One could easily define a new parser by the concatenation of the two, i.e.
+Let's forget for a moment that a parsing function actually returns a list of results `[(a_1, y_1), ...,(a_n, y_n)]` and assume that it just returns single tupel `(a, y)`. Now suppose we have two parsing functions `P` and `Q`. One could easily define a new parser by the concatenation of the two, i.e. we define
 ```
-f*g: x |---> f(x)=[a, y] |---> g(y)=[b, z].
+P*Q: x |---> P(x)=(a, y) |---> Q(y)=(b, z).
 ```
-
-
+There is nothing wrong with this approach, however the final result `(b,z)` does not depend on the intermediate result `a` of the first function `P`. So the natural evolution of the above approach would be the following
+```
+P `bind` f: x |---> P(x)=(a, y) |---> (f(a))(y)=(b, z).
+```
+Instead of `Q` we define an operator ``bind``
 
 ### Monadic behaviour
 
