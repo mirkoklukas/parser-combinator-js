@@ -42,7 +42,7 @@
 
 <p>A <strong>(monadic) parser combinator</strong> is a higher-order functions that produces, and serves as building block for a more specific <em>parser</em>. In our context a <strong>parser</strong> can be understood as a funcion that takes a string, <code>x</code> say, and returns a list of tuples <code>[(a_1, y_1), ...,(a_n, y_n)]</code>, where the <code>a_i</code> are of some previously fixed data type <code>A</code> and the <code>y_i</code> are strings as well. The first component of the tupel can be understood as the result of the parser (e.g. another string, a single character, or a abstract synthax tree), whereas the second component is the remaining string (i.e. the part of the string that hasn't yet been "consumend" by the parser). The empty list <code>[]</code> indicates a failed approach of parsing the given string. The term <em>monadic</em> refers to the fact that we can endow the the set of parsers with an additional structure -- we'll dive into that later.</p>
 
-<p><strong>Examples</strong>. Here is a simple parsing function that simply consumes the letter "z":</p>
+<p><strong>Example</strong>. Here is a simple parsing function that simply consumes the letter "z":</p>
 
 <div class="highlight highlight-JavaScript"><pre><span class="kd">var</span> <span class="nx">z</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">string</span><span class="p">)</span> <span class="p">{</span>
   <span class="kd">var</span> <span class="nx">first</span> <span class="o">=</span> <span class="nx">string</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
@@ -53,6 +53,26 @@
 
 <span class="nx">z</span><span class="p">(</span><span class="s2">"zoo"</span><span class="p">);</span> <span class="c1">// [["z", "oo"]] </span>
 <span class="nx">z</span><span class="p">(</span><span class="s2">"shoe"</span><span class="p">);</span> <span class="c1">// [] </span>
+</pre></div>
+
+<p><strong>Example</strong>. Here is another simple parsing function that simply consumes the first letter of a string, or fails if the string is empty:</p>
+
+<div class="highlight highlight-JavaScript"><pre><span class="kd">var</span> <span class="nx">item</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">string</span><span class="p">.</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">0</span> <span class="o">?</span> <span class="p">[]</span> <span class="o">:</span> <span class="p">[</span> <span class="p">[</span><span class="nx">string</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="nx">string</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span> <span class="p">];</span>
+<span class="p">}</span>
+
+<span class="nx">item</span><span class="p">(</span><span class="s2">"zoo"</span><span class="p">);</span> <span class="c1">// [["z", "oo"]] </span>
+<span class="nx">item</span><span class="p">(</span><span class="s2">"shoe"</span><span class="p">);</span> <span class="c1">// [["s", "hoe"]] </span>
+<span class="nx">item</span><span class="p">(</span><span class="s2">""</span><span class="p">);</span> <span class="c1">// [] </span>
+</pre></div>
+
+<p><strong>Example</strong>. Lets conclude the section with a trivial example. The function that always fails:</p>
+
+<div class="highlight highlight-JavaScript"><pre><span class="kd">var</span> <span class="nx">zero</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">[];</span>
+<span class="p">}</span>
+
+<span class="nx">zero</span><span class="p">(</span><span class="s2">"whatever"</span><span class="p">);</span> <span class="c1">// [] </span>
 </pre></div>
 
 <h4>
@@ -66,8 +86,10 @@
 
 <p>In particular a parsing function is map </p>
 
-<pre><code>String ---&gt; (A×String)^∞ := (A×String) ⋃ (A×String)^2 ⋃ (A×String)^3 ⋃ ...
+<pre><code>String ---&gt; [A×String],
 </code></pre>
+
+<p>where <code>[A×String] := {[]} ⋃ { [(a_1, y_1), ...,(a_n, y_n)]; n ∈ ℕ, (a_i, y_i) ∈ (A×String)}</code>.</p>
 
 <p>Let's forget for a moment that a parsing function actually returns a list of results <code>[(a_1, y_1), ...,(a_n, y_n)]</code> and assume that it just returns single tupel <code>(a, y)</code>. Furthermore suppose we are given two parsing functions <code>P</code> and <code>Q</code>. One could easily define a new parsing function <code>P*Q</code> by</p>
 
