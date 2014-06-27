@@ -34,8 +34,7 @@ In particular a parsing function is map
 ```
 String ---> [A×String],
 ```
-where 
-```[A×String] := {[]} ⋃ { [(a_1, y_1), ...,(a_n, y_n)]; n ∈ ℕ, (a_i, y_i) ∈ (A×String)}.```
+where `[A×String] := {[]} ⋃ { [(a_1, y_1), ...,(a_n, y_n)]; n ∈ ℕ, (a_i, y_i) ∈ (A×String)}`.
 
 Let's forget for a moment that a parsing function actually returns a list of results `[(a_1, y_1), ...,(a_n, y_n)]` and assume that it just returns single tupel `(a, y)`. Furthermore suppose we are given two parsing functions `P` and `Q`. One could easily define a new parsing function `P*Q` by
 ```
