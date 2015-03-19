@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "A Javascript implementation of (some of) the monadic parser combinators defined by G. Hutton and E. Meijer",
   "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
     "test": "make test"
   },
