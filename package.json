@@ -1,0 +1,27 @@
+{
+  "name": "parser_combinator",
+  "version": "0.0.1",
+  "description": "A Javascript implementation of (some of) the monadic parser combinators defined by G. Hutton and E. Meijer",
+  "main": "index.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mirkoklukas/parser-combinator-js.git"
+  },
+  "keywords": [
+    "monadic",
+    "parsing"
+  ],
+  "author": "Mirko Klukas <mirko.klukas@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mirkoklukas/parser-combinator-js/issues"
+  },
+  "homepage": "https://github.com/mirkoklukas/parser-combinator-js",
+  "devDependencies": {
+    "chai": "^2.1.2",
+    "mocha": "^2.2.1"
+  }
+}

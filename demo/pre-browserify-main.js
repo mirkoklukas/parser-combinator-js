@@ -1,3 +1,9 @@
+
+// --------------------
+// Load the interpreter
+// --------------------
+var Lispy = require('../lib/lispy')
+
 // --------------------
 // Create the GUI
 // --------------------
