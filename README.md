@@ -57,6 +57,17 @@ P `bind` f: x |---> P(x) = (a, y) |---> (f(a))(y)=(b, z).
 ```
 Note that we replaced `Q` by a function `f: A ---> Parser`, i.e. given some `a` the received function value `f(a)` is a parsing function itself. 
 
+**Result**. In the previous section we saw how to combine a parser with a function `f: A ---> Parser`. Among these functions there is a neutral candidate that stands out. It is called `result` and is defined as follows
+```
+result x: input |---> [(x,input)].
+```
+It behaves neutral in the sense that we have 
+```
+P `bind` result = id.
+```
 
-...
+
+
+
+
 
