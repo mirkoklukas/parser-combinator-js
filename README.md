@@ -63,7 +63,7 @@ result x: input |---> [(x,input)].
 ```
 It behaves neutral in the sense that we have 
 ```
-P `bind` result = id.
+P `bind` result = P.
 ```
 
 
